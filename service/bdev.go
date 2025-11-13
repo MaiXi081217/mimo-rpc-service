@@ -40,6 +40,26 @@ func (s *BdevService) callRPC(method string, params map[string]any) (interface{}
 // GetBdevs 获取 bdev 列表
 // name: bdev 名称，为空则获取所有 bdev
 // timeoutMs: 超时时间（毫秒），0 表示不等待
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": [
+//     {
+//       "name": "Malloc0",
+//       "uuid": "123e4567-e89b-12d3-a456-426614174000",
+//       "block_size": 512,
+//       "num_blocks": 1048576,
+//       "claimed": false,
+//       "zoned": false,
+//       "supported_io_types": {
+//         "read": true,
+//         "write": true
+//       },
+//       "driver_specific": {}
+//     }
+//   ]
+// }
 func (s *BdevService) GetBdevs(name string, timeoutMs int) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name":       name,
@@ -57,6 +77,15 @@ func (s *BdevService) GetBdevs(name string, timeoutMs int) (interface{}, error) 
 // name: 控制器名称（必需）
 // trtype: 传输类型（必需）
 // traddr: 传输地址（必需）
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": [
+//     "Nvme0n1",
+//     "Nvme0n2"
+//   ]
+// }
 func (s *BdevService) AttachNvmeController(name, trtype, traddr string) (interface{}, error) {
 	if name == "" || trtype == "" || traddr == "" {
 		return nil, fmt.Errorf("name, trtype, and traddr are required")
@@ -79,6 +108,12 @@ func (s *BdevService) AttachNvmeController(name, trtype, traddr string) (interfa
 // uuid: UUID（可选）
 // totalSizeMB: 总大小（MB）
 // blockSize: 块大小（字节）
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": "Malloc0"
+// }
 func (s *BdevService) CreateMallocBdev(name, uuid string, totalSizeMB float64, blockSize int) (interface{}, error) {
 	if totalSizeMB <= 0 || blockSize <= 0 {
 		return nil, fmt.Errorf("total_size and block_size must be positive")
@@ -111,6 +146,12 @@ type CreateRaidBdevRequest struct {
 }
 
 // CreateRaidBdev 创建 RAID bdev
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": "raid1"
+// }
 func (s *BdevService) CreateRaidBdev(req CreateRaidBdevRequest) (interface{}, error) {
 	if req.Name == "" || req.RaidLevel == "" || len(req.BaseBdevs) == 0 {
 		return nil, fmt.Errorf("name, raid_level, and base_bdevs are required")
@@ -142,6 +183,12 @@ func (s *BdevService) CreateRaidBdev(req CreateRaidBdevRequest) (interface{}, er
 // name: 控制器名称（必需）
 // trtype: 传输类型（可选）
 // traddr: 传输地址（可选）
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) DetachNvmeController(name, trtype, traddr string) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name":   name,
@@ -157,6 +204,12 @@ func (s *BdevService) DetachNvmeController(name, trtype, traddr string) (interfa
 }
 
 // DeleteMallocBdev 删除 malloc bdev
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) DeleteMallocBdev(name string) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name": name,
@@ -170,6 +223,12 @@ func (s *BdevService) DeleteMallocBdev(name string) (interface{}, error) {
 }
 
 // DeleteRaidBdev 删除 RAID bdev
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) DeleteRaidBdev(name string) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name": name,
@@ -183,6 +242,12 @@ func (s *BdevService) DeleteRaidBdev(name string) (interface{}, error) {
 }
 
 // AddRaidBaseBdev 向 RAID bdev 添加基础 bdev
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) AddRaidBaseBdev(raidBdev, baseBdev string) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"raid_bdev": raidBdev,
@@ -197,6 +262,12 @@ func (s *BdevService) AddRaidBaseBdev(raidBdev, baseBdev string) (interface{}, e
 }
 
 // RemoveRaidBaseBdev 从 RAID bdev 移除基础 bdev
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) RemoveRaidBaseBdev(name string) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name": name,
@@ -212,6 +283,12 @@ func (s *BdevService) RemoveRaidBaseBdev(name string) (interface{}, error) {
 // WipeSuperblock 清除 bdev 的 superblock
 // name: bdev 名称（必需）
 // size: 清除大小（字节），0 表示使用默认值 1MB
+// 返回值示例：
+// {
+//   "jsonrpc": "2.0",
+//   "id": 1,
+//   "result": true
+// }
 func (s *BdevService) WipeSuperblock(name string, size int) (interface{}, error) {
 	params := client.BuildParams(map[string]any{
 		"name": name,
