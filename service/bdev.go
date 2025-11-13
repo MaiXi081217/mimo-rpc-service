@@ -53,18 +53,13 @@ func (s *BdevService) GetBdevs(name string, timeoutMs int) (interface{}, error) 
 	return result, nil
 }
 
-// GetAllBdevs 获取所有 bdev（便利方法）
-func (s *BdevService) GetAllBdevs() (interface{}, error) {
-	return s.GetBdevs("", 0)
-}
-
 // AttachNvmeController 连接 NVMe 控制器
-// name: bdev 名称
-// trtype: 传输类型，默认为 "PCIe"
-// traddr: PCIe 地址（必需）
+// name: 控制器名称（必需）
+// trtype: 传输类型（必需）
+// traddr: 传输地址（必需）
 func (s *BdevService) AttachNvmeController(name, trtype, traddr string) (interface{}, error) {
-	if trtype == "" {
-		trtype = "PCIe"
+	if name == "" || trtype == "" || traddr == "" {
+		return nil, fmt.Errorf("name, trtype, and traddr are required")
 	}
 	params := client.BuildParams(map[string]any{
 		"name":   name,
@@ -77,11 +72,6 @@ func (s *BdevService) AttachNvmeController(name, trtype, traddr string) (interfa
 		return nil, fmt.Errorf("attach NVMe controller failed: %w", err)
 	}
 	return result, nil
-}
-
-// AttachNvmeControllerByPCIe 通过 PCIe 地址连接 NVMe 控制器（便利方法）
-func (s *BdevService) AttachNvmeControllerByPCIe(name, pcieAddr string) (interface{}, error) {
-	return s.AttachNvmeController(name, "PCIe", pcieAddr)
 }
 
 // CreateMallocBdev 创建 malloc bdev
@@ -146,19 +136,6 @@ func (s *BdevService) CreateRaidBdev(req CreateRaidBdevRequest) (interface{}, er
 		return nil, fmt.Errorf("create RAID bdev failed: %w", err)
 	}
 	return result, nil
-}
-
-// CreateRaidBdevSimple 简化版创建 RAID bdev（便利方法）
-// 使用默认 strip_size_kb=64，superblock=false
-func (s *BdevService) CreateRaidBdevSimple(name, raidLevel string, baseBdevs []string) (interface{}, error) {
-	req := CreateRaidBdevRequest{
-		Name:        name,
-		RaidLevel:   raidLevel,
-		BaseBdevs:   baseBdevs,
-		StripSizeKB: 64,
-		Superblock:  false,
-	}
-	return s.CreateRaidBdev(req)
 }
 
 // DetachNvmeController 断开 NVMe 控制器
