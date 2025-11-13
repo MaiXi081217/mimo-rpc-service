@@ -161,3 +161,90 @@ func (s *BdevService) CreateRaidBdevSimple(name, raidLevel string, baseBdevs []s
 	return s.CreateRaidBdev(req)
 }
 
+// DetachNvmeController 断开 NVMe 控制器
+// name: 控制器名称（必需）
+// trtype: 传输类型（可选）
+// traddr: 传输地址（可选）
+func (s *BdevService) DetachNvmeController(name, trtype, traddr string) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"name":   name,
+		"trtype": trtype,
+		"traddr": traddr,
+	})
+
+	result, err := s.callRPC("bdev_nvme_detach_controller", params)
+	if err != nil {
+		return nil, fmt.Errorf("detach NVMe controller failed: %w", err)
+	}
+	return result, nil
+}
+
+// DeleteMallocBdev 删除 malloc bdev
+func (s *BdevService) DeleteMallocBdev(name string) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"name": name,
+	})
+
+	result, err := s.callRPC("bdev_malloc_delete", params)
+	if err != nil {
+		return nil, fmt.Errorf("delete malloc bdev failed: %w", err)
+	}
+	return result, nil
+}
+
+// DeleteRaidBdev 删除 RAID bdev
+func (s *BdevService) DeleteRaidBdev(name string) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"name": name,
+	})
+
+	result, err := s.callRPC("bdev_raid_delete", params)
+	if err != nil {
+		return nil, fmt.Errorf("delete RAID bdev failed: %w", err)
+	}
+	return result, nil
+}
+
+// AddRaidBaseBdev 向 RAID bdev 添加基础 bdev
+func (s *BdevService) AddRaidBaseBdev(raidBdev, baseBdev string) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"raid_bdev": raidBdev,
+		"base_bdev": baseBdev,
+	})
+
+	result, err := s.callRPC("bdev_raid_add_base_bdev", params)
+	if err != nil {
+		return nil, fmt.Errorf("add base bdev to RAID failed: %w", err)
+	}
+	return result, nil
+}
+
+// RemoveRaidBaseBdev 从 RAID bdev 移除基础 bdev
+func (s *BdevService) RemoveRaidBaseBdev(name string) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"name": name,
+	})
+
+	result, err := s.callRPC("bdev_raid_remove_base_bdev", params)
+	if err != nil {
+		return nil, fmt.Errorf("remove base bdev from RAID failed: %w", err)
+	}
+	return result, nil
+}
+
+// WipeSuperblock 清除 bdev 的 superblock
+// name: bdev 名称（必需）
+// size: 清除大小（字节），0 表示使用默认值 1MB
+func (s *BdevService) WipeSuperblock(name string, size int) (interface{}, error) {
+	params := client.BuildParams(map[string]any{
+		"name": name,
+		"size": size,
+	})
+
+	result, err := s.callRPC("bdev_wipe_superblock", params)
+	if err != nil {
+		return nil, fmt.Errorf("wipe superblock failed: %w", err)
+	}
+	return result, nil
+}
+
