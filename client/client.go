@@ -31,7 +31,7 @@ func GetClient() (*spdk.Client, error) {
 		}
 		c, e := spdk.CreateClientWithJsonCodec(spdk.Unix, addr)
 		if e != nil {
-			err = fmt.Errorf("无法连接 RPC (%s): %w", addr, e)
+			err = fmt.Errorf("failed to connect RPC (%s): %w", addr, e)
 			return
 		}
 		clientInstance = c
@@ -50,12 +50,12 @@ func Call(method string, params map[string]any) ([]byte, error) {
 	}
 	resp, err := client.Call(method, params)
 	if err != nil {
-		return nil, fmt.Errorf("RPC 调用失败 (%s): %w", method, err)
+		return nil, fmt.Errorf("RPC call failed (%s): %w", method, err)
 	}
 
 	data, err := json.MarshalIndent(resp.Result, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("序列化失败: %w", err)
+		return nil, fmt.Errorf("marshal failed: %w", err)
 	}
 	return data, nil
 }
